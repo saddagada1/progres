@@ -25,7 +25,14 @@ const Onboarding = () => {
 
   const handleNext = (index: number) => {
     slidesRef.current?.scrollToIndex({ animated: true, index });
-  }
+  };
+
+  const handleSkip = () => {
+    slidesRef.current?.scrollToIndex({
+      animated: true,
+      index: onboardingSlides.length - 1,
+    });
+  };
 
   return (
     <View>
@@ -68,15 +75,32 @@ const Onboarding = () => {
           backgroundColor: SECONDARY_COLOUR,
           justifyContent: "space-evenly",
           alignItems: "center",
-          flexDirection: 'row'
+          flexDirection: "row",
         }}
       >
-        <Pressable style={styles.skipButton}>
-          <Text style={styles.skipText}>Skip</Text>
-        </Pressable>
-        <Pressable style={styles.nextButton} onPress={() => {currentIndex && currentIndex < 3 ? handleNext(currentIndex + 1) : currentIndex && handleNext(currentIndex)}}>
-          <Text style={styles.nextText}>Next</Text>
-        </Pressable>
+        {currentIndex !== null &&
+        currentIndex === onboardingSlides.length - 1 ? (
+          <Pressable style={styles.getStartedButton}>
+            <Text style={styles.getStartedText}>Get Started</Text>
+          </Pressable>
+        ) : (
+          <>
+            <Pressable style={styles.skipButton} onPress={() => handleSkip()}>
+              <Text style={styles.skipText}>Skip</Text>
+            </Pressable>
+            <Pressable
+              style={styles.nextButton}
+              onPress={() =>
+                currentIndex !== null &&
+                currentIndex < onboardingSlides.length - 1
+                  ? handleNext(currentIndex + 1)
+                  : currentIndex !== null && handleNext(currentIndex)
+              }
+            >
+              <Text style={styles.nextText}>Next</Text>
+            </Pressable>
+          </>
+        )}
       </View>
     </View>
   );
@@ -116,7 +140,7 @@ const styles = StyleSheet.create({
   nextButton: {
     width: "40%",
     height: "40%",
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
@@ -124,5 +148,17 @@ const styles = StyleSheet.create({
   nextText: {
     fontWeight: "800",
     fontSize: 20,
+  },
+  getStartedButton: {
+    width: "80%",
+    height: "40%",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  getStartedText: {
+    fontWeight: "800",
+    fontSize: 25,
   },
 });
