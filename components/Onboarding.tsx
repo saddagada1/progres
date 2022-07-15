@@ -1,9 +1,10 @@
 import {
-  Animated,
   FlatList,
+  Pressable,
   StyleSheet,
   View,
   ViewToken,
+  Text,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { onboardingSlides } from "../constants/onboardingSlides";
@@ -12,16 +13,23 @@ import { SECONDARY_COLOUR } from "../constants/basic";
 
 const Onboarding = () => {
   const [currentIndex, setCurrentIndex] = useState<number | null>(0);
-  const slidesRef = useRef(null);
-  
-  const onViewableItemsChanged = (info: {viewableItems: ViewToken[], changed: ViewToken[]}) => {
-    console.log(info.viewableItems[0].index);
-    //console.log(info.changed);
-  };
+  const slidesRef = useRef<FlatList>(null);
+
+  const onViewableItemsChanged = useRef(
+    (info: { viewableItems: ViewToken[]; changed: ViewToken[] }) => {
+      if (info.viewableItems[0]) {
+        setCurrentIndex(info.viewableItems[0].index);
+      }
+    }
+  ).current;
+
+  const handleNext = (index: number) => {
+    slidesRef.current?.scrollToIndex({ animated: true, index });
+  }
 
   return (
     <View>
-      <View style={{ flex: 0.85 }}>
+      <View style={{ flex: 0.75 }}>
         <FlatList
           data={onboardingSlides}
           renderItem={({ item }) => <OnboardingItem item={item} />}
@@ -34,13 +42,41 @@ const Onboarding = () => {
           ref={slidesRef}
         />
       </View>
-      <View style={{flex: 0.025, backgroundColor: SECONDARY_COLOUR}}>
-        {onboardingSlides.map((slide, index) => {
-            <View key={slide.id} style={styles.pageIndicator}></View>
-        })}
+      <View
+        style={{
+          flex: 0.05,
+          flexDirection: "row",
+          backgroundColor: SECONDARY_COLOUR,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {onboardingSlides.map((slide, index) => (
+          <View
+            key={slide.id}
+            style={
+              index === currentIndex
+                ? styles.pageIndicatorSelected
+                : styles.pageIndicator
+            }
+          />
+        ))}
       </View>
-      <View style={{flex: 0.125, backgroundColor: SECONDARY_COLOUR}}>
-
+      <View
+        style={{
+          flex: 0.2,
+          backgroundColor: SECONDARY_COLOUR,
+          justifyContent: "space-evenly",
+          alignItems: "center",
+          flexDirection: 'row'
+        }}
+      >
+        <Pressable style={styles.skipButton}>
+          <Text style={styles.skipText}>Skip</Text>
+        </Pressable>
+        <Pressable style={styles.nextButton} onPress={() => {currentIndex && currentIndex < 3 ? handleNext(currentIndex + 1) : currentIndex && handleNext(currentIndex)}}>
+          <Text style={styles.nextText}>Next</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -49,10 +85,44 @@ const Onboarding = () => {
 export default Onboarding;
 
 const styles = StyleSheet.create({
-    pageIndicator: {
-        width: 40,
-        height: 20,
-        backgroundColor: '#fff',
-        
-    }
+  pageIndicator: {
+    width: 10,
+    height: 5,
+    backgroundColor: "#969696",
+    margin: 10,
+    borderRadius: 15,
+  },
+  pageIndicatorSelected: {
+    width: 20,
+    height: 5,
+    backgroundColor: "#fff",
+    margin: 10,
+    borderRadius: 15,
+  },
+  skipButton: {
+    width: "40%",
+    height: "40%",
+    borderWidth: 2.5,
+    borderColor: "#fff",
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  skipText: {
+    fontWeight: "800",
+    fontSize: 20,
+    color: "#fff",
+  },
+  nextButton: {
+    width: "40%",
+    height: "40%",
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  nextText: {
+    fontWeight: "800",
+    fontSize: 20,
+  },
 });
