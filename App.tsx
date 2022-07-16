@@ -7,6 +7,7 @@ export default function App() {
   return (
     <MeProvider>
       <NavigationContainer>
+        <StatusBar style="auto"/>
         <MainNavigator />
       </NavigationContainer>
     </MeProvider>

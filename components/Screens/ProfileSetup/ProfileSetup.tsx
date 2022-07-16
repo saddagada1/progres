@@ -12,10 +12,12 @@ import { Formik } from "formik";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
+import { useMeContext } from "../../../contexts/Me";
 
 type ProfileSetupProps = StackScreenProps<MainStackParams, 'ProfileSetup'>
 
 const ProfileSetup: React.FC<ProfileSetupProps> = ({navigation}) => {
+  const meCtx = useMeContext();
   return (
     <SafeAreaView style={styles.container}>
       <Formik
@@ -26,6 +28,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({navigation}) => {
           } else {
             try {
               await AsyncStorage.setItem('@me', values.name);
+              meCtx?.setName(values.name);
               navigation.reset({index: 0, routes: [{name: 'Home'}]});
             } catch (error) {
               console.log('Error Setting @me: ', error);

@@ -2,7 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface MeValues {
-  name: string | null
+  name: string | null,
+  setName: React.Dispatch<React.SetStateAction<string | null>>
   loading: boolean
 }
 
@@ -33,7 +34,7 @@ const MeProvider: React.FC<MeProviderProps> = ({ children }) => {
     getName();
   }, [])
   
-  return <MeContext.Provider value={{name, loading}}>{children}</MeContext.Provider>;
+  return <MeContext.Provider value={{name, setName, loading}}>{children}</MeContext.Provider>;
 };
 
 export const useMeContext = () => useContext(MeContext);
