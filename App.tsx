@@ -1,22 +1,14 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import Onboarding from './components/Onboarding';
-import { PRIMARY_COLOUR } from './constants/basic';
+import { NavigationContainer } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import MainNavigator from "./components/Navigators/MainNavigator";
+import MeProvider from "./contexts/Me";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Onboarding/>
-      <StatusBar style="auto" />
-    </View>
+    <MeProvider>
+      <NavigationContainer>
+        <MainNavigator />
+      </NavigationContainer>
+    </MeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: PRIMARY_COLOUR,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

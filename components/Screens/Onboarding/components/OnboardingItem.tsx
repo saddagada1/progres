@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Image, useWindowDimensions, ImageSourcePropType } from 'react-native'
 import React from 'react'
-import { onboardingSlide } from '../constants/onboardingSlides';
-import { PRIMARY_COLOUR, SECONDARY_COLOUR } from '../constants/basic';
+import { onboardingSlide } from '../../../../constants/onboardingSlides';
+import { PRIMARY_COLOUR, SECONDARY_COLOUR } from '../../../../constants/basic';
 
 interface OnboardingItemProps {
     item: onboardingSlide
@@ -14,7 +14,7 @@ const OnboardingItem: React.FC<OnboardingItemProps> = ({item}) => {
     <View style={[styles.container, {width}]}>
       <Image style={[styles.image, {width, resizeMode: 'contain'}]} source={item.source}/>
 
-      <View style={{flex: 0.3, width, backgroundColor: SECONDARY_COLOUR, justifyContent: 'center'}}>
+      <View style={{flex: 0.3, width, backgroundColor: SECONDARY_COLOUR, justifyContent: 'center', alignItems: 'center'}}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.description}>{item.description}</Text>
       </View>
@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
+        width: '80%',
         fontWeight: '800',
         fontSize: 40,
         marginBottom: 10,

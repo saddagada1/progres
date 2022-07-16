@@ -5,13 +5,18 @@ import {
   View,
   ViewToken,
   Text,
+  SafeAreaView,
 } from "react-native";
 import React, { useRef, useState } from "react";
-import { onboardingSlides } from "../constants/onboardingSlides";
-import OnboardingItem from "./OnboardingItem";
-import { SECONDARY_COLOUR } from "../constants/basic";
+import { onboardingSlides } from "../../../constants/onboardingSlides";
+import OnboardingItem from "./components/OnboardingItem";
+import { PRIMARY_COLOUR, SECONDARY_COLOUR } from "../../../constants/basic";
+import { StackScreenProps } from "@react-navigation/stack";
+import { MainStackParams } from "../../Navigators/MainNavigator";
 
-const Onboarding = () => {
+type OnboardingProps = StackScreenProps<MainStackParams, 'Onboarding'>
+
+const Onboarding: React.FC<OnboardingProps> = ({navigation}) => {
   const [currentIndex, setCurrentIndex] = useState<number | null>(0);
   const slidesRef = useRef<FlatList>(null);
 
@@ -35,7 +40,7 @@ const Onboarding = () => {
   };
 
   return (
-    <View>
+    <SafeAreaView style={styles.container}>
       <View style={{ flex: 0.75 }}>
         <FlatList
           data={onboardingSlides}
@@ -80,7 +85,7 @@ const Onboarding = () => {
       >
         {currentIndex !== null &&
         currentIndex === onboardingSlides.length - 1 ? (
-          <Pressable style={styles.getStartedButton}>
+          <Pressable style={styles.getStartedButton} onPress={() => navigation.push('ProfileSetup')}>
             <Text style={styles.getStartedText}>Get Started</Text>
           </Pressable>
         ) : (
@@ -102,13 +107,17 @@ const Onboarding = () => {
           </>
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default Onboarding;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: PRIMARY_COLOUR,
+  },
   pageIndicator: {
     width: 10,
     height: 5,
