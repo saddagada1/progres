@@ -9,7 +9,7 @@ export default function App() {
     <DataProvider>
       <MeProvider>
         <NavigationContainer>
-          <StatusBar style="auto" />
+          <StatusBar style="dark" />
           <MainNavigator />
         </NavigationContainer>
       </MeProvider>

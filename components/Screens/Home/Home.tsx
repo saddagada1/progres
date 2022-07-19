@@ -92,14 +92,14 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           renderItem={({ item }) => <Semester item={item} />}
           contentContainerStyle={{ alignItems: "center", flex: 1 }}
         />
-        <View>
+        {/* <View>
           <AdMobBanner
             bannerSize="smartBannerLandscape"
             adUnitID="ca-app-pub-3940256099942544/6300978111"
             servePersonalizedAds
             onDidFailToReceiveAdWithError={(e) => console.log(e)}
           />
-        </View>
+        </View> */}
       </View>
     </View>
   );

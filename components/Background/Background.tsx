@@ -1,84 +1,84 @@
-import {StyleSheet, View } from "react-native";
-import React, { useEffect } from "react";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from "react-native-reanimated";
-import RadialGradient from 'react-native-radial-gradient';
+import {StyleSheet, View, useWindowDimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Canvas, Circle, useValue, RadialGradient, vec, runTiming, useComputedValue, SkiaMutableValue } from "@shopify/react-native-skia";
 
 interface BackgroundProps {}
 
 const Background: React.FC<BackgroundProps> = () => {
-    const translateCircle1 = useSharedValue(0);
-    const translateCircle2 = useSharedValue(0);
-    const translateCircle3 = useSharedValue(0);
+    const { width, height } = useWindowDimensions();
+    const radius = width;
+    const circle1XPosition = useValue(0);
+    const circle1YPosition = useValue(0);
+    const radial1Position = useComputedValue(() => {
+        return vec(circle1XPosition.current, circle1YPosition.current)
+    }, [circle1XPosition, circle1YPosition]);
+    const circle2XPosition = useValue(width);
+    const circle2YPosition = useValue(0);
+    const radial2Position = useComputedValue(() => {
+        return vec(circle2XPosition.current, circle2YPosition.current)
+    }, [circle2XPosition, circle2YPosition]);
+    const circle3XPosition = useValue(0);
+    const circle3YPosition = useValue(height);
+    const radial3Position = useComputedValue(() => {
+        return vec(circle3XPosition.current, circle3YPosition.current)
+    }, [circle3XPosition, circle3YPosition]);
+    const circle4XPosition = useValue(width);
+    const circle4YPosition = useValue(height);
+    const radial4Position = useComputedValue(() => {
+        return vec(circle4XPosition.current, circle4YPosition.current)
+    }, [circle4XPosition, circle4YPosition]);
+    const [animate, setAnimate] = useState(true);
 
     const rand = (min: number, max: number) => {
         return Math.floor(Math.random() * (max - min + 1)) + min
     }
 
-    const circle1Styles = useAnimatedStyle(() => {
-      return {
-        transform: [
-          { translateX: translateCircle1.value },
-          { translateY: translateCircle1.value },
-        ],
-      };
-    }, []);
-
-    const circle2Styles = useAnimatedStyle(() => {
-      return {
-        transform: [
-          { translateX: translateCircle2.value },
-          { translateY: translateCircle2.value },
-        ],
-      };
-    }, []);
-
-    const circle3Styles = useAnimatedStyle(() => {
-      return {
-        transform: [
-          { translateX: translateCircle3.value },
-          { translateY: translateCircle3.value },
-        ],
-      };
-    }, []);
-
-    const animateCircle1 = () => {
-        translateCircle1.value = withTiming(rand(-250, 250), {duration: 10000}, () => {
-            animateCircle1();
-        })
-    }
-
-    const animateCircle2 = () => {
-        translateCircle2.value = withTiming(rand(-250, 250), {duration: 10000}, () => {
-            animateCircle2();
-        })
-    }
-
-    const animateCircle3 = () => {
-        translateCircle3.value = withTiming(rand(-250, 250), {duration: 10000}, () => {
-            animateCircle3();
-        })
+    const animateCircle = (x: SkiaMutableValue<number>, y: SkiaMutableValue<number>) => {
+        const animateX = () => {
+            const randomX = rand(0, width)
+            runTiming(x, randomX, {duration: Math.abs((x.current - randomX)/10 * 1000)}, () => {
+                animate && animateX();
+            })
+        }
+        const animateY = () => {
+            const randomY = rand(0, height)
+            runTiming(y, randomY, {duration: Math.abs((y.current - randomY)/10 * 1000)}, () => {
+                animate && animateY();
+            })
+        }
+        animateX();
+        animateY();
     }
 
     useEffect(() => {
-    //   animateCircle1();
-    //   animateCircle2();
-    //   animateCircle3();
-    }, []);
+     setAnimate(true);
+     animateCircle(circle1XPosition, circle1YPosition);
+     animateCircle(circle2XPosition, circle2YPosition);
+     animateCircle(circle3XPosition, circle3YPosition);
+     animateCircle(circle4XPosition, circle4YPosition);
 
-    const AnimatedRadialGradient = Animated.createAnimatedComponent(RadialGradient);
+     return () => {
+        setAnimate(false);
+     }
+    }, [])
+    
 
   return (
     <View style={styles.root}>
-      <View style={styles.container}>
-          <AnimatedRadialGradient colors={["#ffff004D", "#ffffff00"]} style={[styles.gradient, circle1Styles]}/>
-          <AnimatedRadialGradient colors={["#00ff004D", "#ffffff00"]} style={[styles.gradient, circle2Styles]}/>
-          <AnimatedRadialGradient colors={["#00ffff4D", "#ffffff00"]} style={[styles.gradient, circle3Styles, {top: 0}]}/>
-      </View>
+      <Canvas style={styles.container}>
+        <Circle cx={circle1XPosition} cy={circle1YPosition} r={radius}>
+            <RadialGradient c={radial1Position} r={radius} colors={["#ffff0066", "#ffffff00"]}/>
+        </Circle>
+        <Circle cx={circle2XPosition} cy={circle2YPosition} r={radius}>
+            <RadialGradient c={radial2Position} r={radius} colors={["#00ff0066", "#ffffff00"]}/>
+        </Circle>
+        <Circle cx={circle3XPosition} cy={circle3YPosition} r={radius}>
+            <RadialGradient c={radial3Position} r={radius} colors={["#00ffff66", "#ffffff00"]}/>
+        </Circle>
+        <Circle cx={circle4XPosition} cy={circle4YPosition} r={radius}>
+            <RadialGradient c={radial4Position} r={radius} colors={["#ff00ff66", "#ffffff00"]}/>
+        </Circle>
+      </Canvas>
     </View>
   );
 };
@@ -93,21 +93,6 @@ const styles = StyleSheet.create({
     zIndex: -10,
   },
   container: {
-    flex: 1,
-    position: "relative",
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  gradient: {
-    width: 350,
-    height: 350,
-    position: 'absolute',
-    zIndex: -2
-  },
-  blur: {
-    width: "100%",
-    height: "100%",
-    position: 'absolute',
-    zIndex: -1
+    flex: 1
   },
 });
