@@ -65,7 +65,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <Background/>
       <CreateSemesterModal trigger={triggerCreate} setTrigger={setTriggerCreate} />
       <View style={styles.container}>
@@ -101,7 +101,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: PRIMARY_COLOUR,
-    marginTop: StatusBar.currentHeight,
   },
   container: {
     width: "100%",
     flex: 1,
     alignItems: "center",
+    zIndex: 10
   },
   headerContainer: {
     width: "100%",

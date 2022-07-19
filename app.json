@@ -28,7 +28,8 @@
       },
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-3981737650047962~8655348392"
-      }
+      },
+      "package": "com.saddagada1.progres"
     },
     "web": {
       "favicon": "./assets/favicon.png"

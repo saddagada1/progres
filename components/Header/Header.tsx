@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StatusBar, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { useMeContext } from '../../contexts/Me';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -19,6 +19,7 @@ export default Header
 
 const styles = StyleSheet.create({
     container: {
+        marginTop: StatusBar.currentHeight,
         width: '90%',
         flexDirection: 'row',
         justifyContent: 'space-between',
