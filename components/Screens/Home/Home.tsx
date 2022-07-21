@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Platform,
   useWindowDimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -16,14 +15,14 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
 import Header from "../../Header/Header";
 import { FlatList } from "react-native-gesture-handler";
-import SemesterCard from "../../Cards/SemesterCard";
-import CreateSemesterModal from "../../Modals/CreateSemesterModal";
 import { useDataContext } from "../../../contexts/Data";
 import Background from "../../Background/Background";
 import { LineChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/Feather";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import BannerAd from "../../Ads/BannerAd";
+import CreateInstitutionModal from "../../Modals/CreateInstitutionModal";
+import InstitutionCard from "../../Cards/InstitutionCard";
 
 type HomeProps = StackScreenProps<MainStackParams, "Home">;
 
@@ -36,6 +35,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       height: chartContainerHeight.value
     }
   }, [])
+  
   const [triggerChart, setTriggerChart] = useState(false);
   const [triggerSelect, setTriggerSelect] = useState(false);
   const [triggerCreate, setTriggerCreate] = useState(false);
@@ -55,13 +55,13 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   return (
     <View style={styles.root}>
       <Background />
-      <CreateSemesterModal
+      <CreateInstitutionModal
         trigger={triggerCreate}
         setTrigger={setTriggerCreate}
       />
       <View style={[styles.container, {width: width * 0.9}]}>
         <Header />
-        <Text style={styles.gpaHeader}>Cumulative GPA</Text>
+        <Text style={styles.gpaHeader}>Combined GPA</Text>
         <Text style={styles.gpa}>3.75</Text>
         <View style={[styles.rowContainer]}>
           <Text style={styles.smallText}>Scale of 4</Text>
@@ -73,10 +73,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         <Animated.View style={[styles.chartContainer, {marginBottom: triggerChart ? 20 : 0}, chartContainerStyle]}>
           <LineChart
             data={{
-              labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", '20'],
+              labels: ["1", "2", "3", "4", "5", "6", "7"],
               datasets: [
                 {
-                  data: [2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.3, 4 ],
+                  data: [2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21],
                 },
               ],
             }}
@@ -90,18 +90,18 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             
           />
         </Animated.View>
-        {/* <BannerAd/> */}
-        <View style={styles.semesterActionsContainer}>
-            <Text style={styles.semesterHeader}>Semesters</Text>
+        <BannerAd/>
+        <View style={styles.flatlistActionsContainer}>
+            <Text style={styles.flatlistHeader}>Institutions</Text>
             <View style={{flexDirection: 'row'}}>
-              <Pressable onPress={() => {setTriggerSelect(!triggerSelect), navigation.push('ProfileSetup')}}><Text style={[styles.semesterAction, triggerSelect ? styles.actionHighlight : styles.actionDefault]}>Select</Text></Pressable>
-              <Pressable onPress={() => setTriggerCreate(true)}><Text style={[styles.semesterAction, styles.actionDefault]}>Create</Text></Pressable>
+              <Pressable onPress={() => {setTriggerSelect(!triggerSelect), navigation.push('ProfileSetup')}}><Text style={[styles.flatlistAction, triggerSelect ? styles.actionHighlight : styles.actionDefault]}>Select</Text></Pressable>
+              <Pressable onPress={() => setTriggerCreate(true)}><Text style={[styles.flatlistAction, styles.actionDefault]}>Create</Text></Pressable>
             </View>
         </View>
         <FlatList
           style={{width}}
-          data={dataCtx?.semesters}
-          renderItem={({ item }) => <SemesterCard semester={item} />}
+          data={dataCtx?.institutions}
+          renderItem={({ item }) => <InstitutionCard institution={item} />}
           contentContainerStyle={{ alignItems: "center", paddingTop: 15}}
           showsVerticalScrollIndicator={false}
         />
@@ -115,7 +115,8 @@ export default Home;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   container: {
     flex: 1,
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 7,
   },
-  semesterActionsContainer: {
+  flatlistActionsContainer: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -164,12 +165,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: ACCENT_COLOUR,
   },
-  semesterHeader: {
+  flatlistHeader: {
     fontSize: 25,
     fontFamily: "Inter",
     color: ACCENT_COLOUR,
   },
-  semesterAction: {
+  flatlistAction: {
     marginLeft: 5,
     fontSize: 15,
     fontFamily: "Inter",
@@ -184,9 +185,5 @@ const styles = StyleSheet.create({
   actionHighlight: {
     color: PRIMARY_COLOUR,
     backgroundColor: SECONDARY_COLOUR,
-  },
-  semesterList: {
-    width: '100%',
-    
   },
 });

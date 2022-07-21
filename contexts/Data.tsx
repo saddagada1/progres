@@ -1,9 +1,20 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SQLite from "expo-sqlite";
+import { INSTITUTION, SEMESTER, SESSION } from "../sqlite/tables";
 
 const db = SQLite.openDatabase("data");
 
-export interface Semester {
+export interface InstitutionSchema {
+  institutionid: number;
+  institutionname: string;
+  institutionstartdate: string;
+  institutionenddate: string;
+  institutionicon: string;
+  institutionstatus: string;
+  institutiongpa: number | null;
+}
+
+export interface SemesterSchema {
   semesterid: number | undefined;
   semestername: string;
   semesterstartdate: string;
@@ -13,8 +24,15 @@ export interface Semester {
 }
 
 interface DataValues {
-  semesters: Semester[];
-  createSemester: (name: string, startDate: string, endDate: string, colour: string) => void
+  institutions: InstitutionSchema[];
+  createInstitution: (name: string, startDate: string, endDate: string, icon: string, status: string, gpa?: number) => void
+  semesters: SemesterSchema[];
+  createSemester: (
+    name: string,
+    startDate: string,
+    endDate: string,
+    colour: string
+  ) => void;
   loading: boolean;
 }
 
@@ -25,13 +43,72 @@ interface DataProviderProps {
 }
 
 const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [institutions, setInstitutions] = useState<InstitutionSchema[]>([]);
+  const [semesters, setSemesters] = useState<SemesterSchema[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const fetchInstitutions = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM institution",
+        undefined,
+        (txObj, resultSet) => {
+          setInstitutions([...institutions, ...resultSet.rows._array]);
+        },
+        (txObj, error) => {
+          console.log("Error", error);
+          return false;
+        }
+      );
+    });
+  };
+
+  const createInstitution = (
+    name: string,
+    startDate: string,
+    endDate: string,
+    icon: string,
+    status: string,
+    gpa?: number
+  ) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        gpa
+          ? "INSERT INTO institution (institutionname, institutionstartdate, institutionenddate, institutionicon, institutionstatus, institutiongpa) values (?, ?, ?, ?, ?, ?)"
+          : "INSERT INTO institution (institutionname, institutionstartdate, institutionenddate, institutionicon, institutionstatus) values (?, ?, ?, ?, ?)",
+        gpa
+          ? [name, startDate, endDate, icon, status, gpa]
+          : [name, startDate, endDate, icon, status],
+        (txObj, resultSet) => {
+          console.log(resultSet);
+          if (resultSet.insertId !== undefined) {
+            setInstitutions([
+              ...institutions,
+              {
+                institutionid: resultSet.insertId,
+                institutionname: name,
+                institutionstartdate: startDate,
+                institutionenddate: endDate,
+                institutionicon: icon,
+                institutionstatus: status,
+                institutiongpa: gpa ? gpa : null,
+              },
+            ]);
+          }
+        },
+        (txObj, error) => {
+          console.log("Error", error);
+          return false;
+        }
+      );
+    });
+  };
 
   const fetchSemesters = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        "SELECT * FROM semester", undefined,
+        "SELECT * FROM semester",
+        undefined,
         (txObj, resultSet) => {
           setSemesters([...semesters, ...resultSet.rows._array]);
         },
@@ -41,7 +118,7 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         }
       );
     });
-  }
+  };
 
   const createSemester = (
     name: string,
@@ -77,17 +154,15 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   useEffect(() => {
     db.transaction((tx) => {
-      tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS semester (semesterid INTEGER PRIMARY KEY AUTOINCREMENT, semestername TEXT NOT NULL, semesterstartdate TEXT NOT NULL, semesterenddate TEXT NOT NULL, semestercolour TEXT NOT NULL, semestergpa REAL)"
-      );
-      tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS course (courseid INTEGER PRIMARY KEY AUTOINCREMENT, coursesemester INTEGER NOT NULL, coursename TEXT NOT NULL, coursecolour TEXT NOT NULL, coursegpa REAL, FOREIGN KEY(coursesemester) REFERENCES semester(semesterid))"
-      );
+      tx.executeSql(INSTITUTION);
+      tx.executeSql(SESSION);
+      tx.executeSql(SEMESTER);
     });
 
     //add check to see if table exists before fetching
+    fetchInstitutions();
 
-    fetchSemesters();
+    // fetchSemesters();
     // db.transaction((tx) => {
     //     tx.executeSql(
     //       "DROP TABLE semester"
@@ -99,7 +174,7 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <DataContext.Provider value={{ semesters, createSemester, loading }}>
+    <DataContext.Provider value={{ institutions, createInstitution, semesters, createSemester, loading }}>
       {children}
     </DataContext.Provider>
   );

@@ -10,10 +10,10 @@ import {
   PRIMARY_COLOUR,
   SECONDARY_COLOUR,
 } from "../../constants/basic";
-import { Semester } from "../../contexts/Data";
+import { SemesterSchema } from "../../contexts/Data";
 
 interface SemesterCardProps {
-  semester: Semester;
+  semester: SemesterSchema;
 }
 
 const SemesterCard: React.FC<SemesterCardProps> = ({ semester }) => {
@@ -26,10 +26,14 @@ const SemesterCard: React.FC<SemesterCardProps> = ({ semester }) => {
         />
         <View style={styles.rowContainer}>
           <View style={styles.detailsContainer}>
-            <Text style={styles.date}>
-              {semester.semesterstartdate} - {semester.semesterenddate}
+            <Text numberOfLines={1} style={styles.name}>{semester.semestername}</Text>
+            <Text numberOfLines={1} style={styles.smallText}>
+              {semester.semesterstartdate.slice(2)} - {semester.semesterenddate.slice(2)}
             </Text>
-            <Text style={styles.name}>{semester.semestername}</Text>
+          </View>
+          <View style={styles.gpaContainer}>
+            <Text style={styles.gpa}>TBD</Text>
+            <Text style={styles.smallText}>GPA</Text>
           </View>
         </View>
       </View>
@@ -66,16 +70,28 @@ const styles = StyleSheet.create({
   detailsContainer: {
     flex: 1,
     justifyContent: "space-between",
-    marginLeft: 20,
+    marginHorizontal: 20,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderRightColor: ACCENT_COLOUR,
   },
   name: {
+    flex: 1,
     fontSize: 25,
     fontFamily: "InterBold",
   },
-  date: {
-    flex: 1,
+  smallText: {
     fontSize: 15,
     fontFamily: "Inter",
-    color: ACCENT_COLOUR,
+    color: ACCENT_COLOUR
   },
+  gpaContainer: {
+    flex: 0.3,
+    alignItems: 'center',
+  },
+  gpa: {
+    flex: 1,
+    fontSize: 25,
+    fontFamily: "InterBold",
+    textAlign: 'center'
+  }
 });
