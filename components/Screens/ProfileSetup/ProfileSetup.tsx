@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
 import { useMeContext } from "../../../contexts/Me";
+import Background from "../../Background/Background";
 
 type ProfileSetupProps = StackScreenProps<MainStackParams, 'ProfileSetup'>
 
@@ -20,6 +21,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({navigation}) => {
   const meCtx = useMeContext();
   return (
     <SafeAreaView style={styles.container}>
+      <Background/>
       <Formik
         initialValues={{ name: ""}}
         onSubmit={async (values) => {

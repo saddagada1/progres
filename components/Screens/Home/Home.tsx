@@ -1,105 +1,110 @@
 import {
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
-  StatusBar,
   Platform,
+  useWindowDimensions,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ACCENT_COLOUR,
   PRIMARY_COLOUR,
   SECONDARY_COLOUR,
 } from "../../../constants/basic";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
 import Header from "../../Header/Header";
 import { FlatList } from "react-native-gesture-handler";
-import Semester from "../../Cards/Semester";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { AdMobBanner, setTestDeviceIDAsync } from "expo-ads-admob";
+import SemesterCard from "../../Cards/SemesterCard";
 import CreateSemesterModal from "../../Modals/CreateSemesterModal";
 import { useDataContext } from "../../../contexts/Data";
 import Background from "../../Background/Background";
+import { LineChart } from "react-native-chart-kit";
+import Icon from "react-native-vector-icons/Feather";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import BannerAd from "../../Ads/BannerAd";
 
 type HomeProps = StackScreenProps<MainStackParams, "Home">;
 
 const Home: React.FC<HomeProps> = ({ navigation }) => {
+  const { width, height } = useWindowDimensions();
   const dataCtx = useDataContext();
+  const chartContainerHeight = useSharedValue(0);
+  const chartContainerStyle = useAnimatedStyle(() => {
+    return {
+      height: chartContainerHeight.value
+    }
+  }, [])
+  const [triggerChart, setTriggerChart] = useState(false);
+  const [triggerSelect, setTriggerSelect] = useState(false);
   const [triggerCreate, setTriggerCreate] = useState(false);
-  // const clearMe = async () => {
-  //   try {
-  //     await AsyncStorage.removeItem("@me");
-  //     navigation.replace("Onboarding");
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  const semesters = [
-    {
-      start: "Sept 7, 2022",
-      end: "Dec 12, 2022",
-      name: "Fall",
-      color: "#000000",
-    },
-    {
-      start: "Jan 8, 2023",
-      end: "Apr 13, 2023",
-      name: "Winter",
-      color: "#f2a305",
-    },
-    {
-      start: "Jun 9, 2023",
-      end: "Aug 14, 2023",
-      name: "Summer",
-      color: "#0583f2",
-    },
-  ];
+ 
+  const handleChartToggle = () => {
+     if (triggerChart) {
+      chartContainerHeight.value = withSpring(height * 0.225)
+     } else {
+      chartContainerHeight.value = withTiming(0)
+     }
+  }
 
   useEffect(() => {
-    setTestDeviceIDAsync("EMULATOR");
-  }, []);
-
+    handleChartToggle();
+  }, [triggerChart])
+  
   return (
     <View style={styles.root}>
-      <Background/>
-      <CreateSemesterModal trigger={triggerCreate} setTrigger={setTriggerCreate} />
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Header />
-          <View style={styles.title}>
-            <Text style={styles.titleText}>Semesters</Text>
-          </View>
-          <View style={styles.buttonsContainer}>
-            <Pressable style={styles.cgpaButton}>
-              <Text style={styles.cgpaText}>Cumulative GPA: 3.75</Text>
-            </Pressable>
-            <Pressable
-              style={styles.createButton}
-              onPress={() => setTriggerCreate(true)}
-            >
-              <FontAwesomeIcon size={25} color={PRIMARY_COLOUR} icon={faPlus} />
-            </Pressable>
-          </View>
+      <Background />
+      <CreateSemesterModal
+        trigger={triggerCreate}
+        setTrigger={setTriggerCreate}
+      />
+      <View style={[styles.container, {width: width * 0.9}]}>
+        <Header />
+        <Text style={styles.gpaHeader}>Cumulative GPA</Text>
+        <Text style={styles.gpa}>3.75</Text>
+        <View style={[styles.rowContainer]}>
+          <Text style={styles.smallText}>Scale of 4</Text>
+          <Pressable style={{flexDirection: 'row'}} onPress={() => setTriggerChart(!triggerChart)}>
+            <Text style={styles.smallText}>{triggerChart ? 'Hide' : 'Show'} Chart</Text>
+            <Icon name={triggerChart ? "chevron-up" : "chevron-down"} size={20} color={ACCENT_COLOUR} /> 
+          </Pressable>
+        </View>
+        <Animated.View style={[styles.chartContainer, {marginBottom: triggerChart ? 20 : 0}, chartContainerStyle]}>
+          <LineChart
+            data={{
+              labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", '20'],
+              datasets: [
+                {
+                  data: [2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.21, 2.67, 3.75, 2.3, 4 ],
+                },
+              ],
+            }}
+            fromZero={true}
+            width={width * 0.9} // from react-native
+            height={height * 0.2}
+            transparent={true}
+            chartConfig={{
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            }}
+            
+          />
+        </Animated.View>
+        {/* <BannerAd/> */}
+        <View style={styles.semesterActionsContainer}>
+            <Text style={styles.semesterHeader}>Semesters</Text>
+            <View style={{flexDirection: 'row'}}>
+              <Pressable onPress={() => {setTriggerSelect(!triggerSelect), navigation.push('ProfileSetup')}}><Text style={[styles.semesterAction, triggerSelect ? styles.actionHighlight : styles.actionDefault]}>Select</Text></Pressable>
+              <Pressable onPress={() => setTriggerCreate(true)}><Text style={[styles.semesterAction, styles.actionDefault]}>Create</Text></Pressable>
+            </View>
         </View>
         <FlatList
-          style={styles.semesterList}
+          style={{width}}
           data={dataCtx?.semesters}
-          renderItem={({ item }) => <Semester item={item} />}
-          contentContainerStyle={{ alignItems: "center", flex: 1 }}
+          renderItem={({ item }) => <SemesterCard semester={item} />}
+          contentContainerStyle={{ alignItems: "center", paddingTop: 15}}
+          showsVerticalScrollIndicator={false}
         />
-        {/* <View>
-          <AdMobBanner
-            bannerSize="smartBannerLandscape"
-            adUnitID="ca-app-pub-3940256099942544/6300978111"
-            servePersonalizedAds
-            onDidFailToReceiveAdWithError={(e) => console.log(e)}
-          />
-        </View> */}
       </View>
     </View>
   );
@@ -110,63 +115,78 @@ export default Home;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    alignItems: "center",
-    backgroundColor: PRIMARY_COLOUR,
+    alignItems: 'center'
   },
   container: {
-    width: "100%",
     flex: 1,
     alignItems: "center",
-    zIndex: 10
   },
-  headerContainer: {
-    width: "100%",
+  gpaHeader: {
+    fontSize: 20,
+    fontFamily: "Inter",
+    color: ACCENT_COLOUR,
+  },
+  gpa: {
+    fontSize: 100,
+    fontFamily: "InterBlack",
+    marginBottom: 10
+  },
+  rowContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  smallText: {
+    fontSize: 15,
+    fontFamily: "Inter",
+    color: ACCENT_COLOUR,
+  },
+  chartContainer: {
+    borderRadius: 20,
+    backgroundColor: SECONDARY_COLOUR,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: SECONDARY_COLOUR,
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 7,
+  },
+  semesterActionsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingBottom: 10,
-    alignItems: "center",
-    borderBottomWidth: 2.5,
-    borderBottomColor: SECONDARY_COLOUR,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: ACCENT_COLOUR,
   },
-  title: {
-    width: "90%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 10,
+  semesterHeader: {
+    fontSize: 25,
+    fontFamily: "Inter",
+    color: ACCENT_COLOUR,
   },
-  titleText: {
-    fontSize: 50,
-    fontWeight: "800",
+  semesterAction: {
+    marginLeft: 5,
+    fontSize: 15,
+    fontFamily: "Inter",
+    paddingVertical: 2.5,
+    paddingHorizontal: 15,
+    borderRadius: 15
   },
-  buttonsContainer: {
-    width: "90%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  cgpaButton: {
-    width: "75%",
-    height: 60,
-    backgroundColor: SECONDARY_COLOUR,
-    borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cgpaText: {
-    fontSize: Platform.OS === "ios" ? 20 : 25,
-    fontWeight: "800",
+  actionDefault: {
     color: PRIMARY_COLOUR,
+    backgroundColor: ACCENT_COLOUR,
   },
-  createButton: {
-    width: "20%",
-    height: 60,
+  actionHighlight: {
+    color: PRIMARY_COLOUR,
     backgroundColor: SECONDARY_COLOUR,
-    borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
   },
   semesterList: {
-    width: "100%",
-  }
+    width: '100%',
+    
+  },
 });

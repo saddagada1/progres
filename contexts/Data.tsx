@@ -3,13 +3,13 @@ import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabase("data");
 
-interface Semester {
-  id: number | undefined;
-  name: string;
-  startDate: string;
-  endDate: string;
-  colour: string;
-  gpa: number | null;
+export interface Semester {
+  semesterid: number | undefined;
+  semestername: string;
+  semesterstartdate: string;
+  semesterenddate: string;
+  semestercolour: string;
+  semestergpa: number | null;
 }
 
 interface DataValues {
@@ -28,6 +28,21 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchSemesters = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM semester", undefined,
+        (txObj, resultSet) => {
+          setSemesters([...semesters, ...resultSet.rows._array]);
+        },
+        (txObj, error) => {
+          console.log("Error", error);
+          return false;
+        }
+      );
+    });
+  }
+
   const createSemester = (
     name: string,
     startDate: string,
@@ -43,12 +58,12 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           setSemesters([
             ...semesters,
             {
-              id: resultSet.insertId,
-              name,
-              startDate,
-              endDate,
-              colour,
-              gpa: null,
+              semesterid: resultSet.insertId,
+              semestername: name,
+              semesterstartdate: startDate,
+              semesterenddate: endDate,
+              semestercolour: colour,
+              semestergpa: null,
             },
           ]);
         },
@@ -69,6 +84,10 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         "CREATE TABLE IF NOT EXISTS course (courseid INTEGER PRIMARY KEY AUTOINCREMENT, coursesemester INTEGER NOT NULL, coursename TEXT NOT NULL, coursecolour TEXT NOT NULL, coursegpa REAL, FOREIGN KEY(coursesemester) REFERENCES semester(semesterid))"
       );
     });
+
+    //add check to see if table exists before fetching
+
+    fetchSemesters();
     // db.transaction((tx) => {
     //     tx.executeSql(
     //       "DROP TABLE semester"
