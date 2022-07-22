@@ -4,6 +4,9 @@ import MainNavigator from "./components/Navigators/MainNavigator";
 import ContextsProvider from "./contexts/ContextsProvider";
 import { useFonts, Inter_600SemiBold, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
+import { enableScreens } from 'react-native-screens';
+
+enableScreens();
 
 SplashScreen.preventAutoHideAsync();
 

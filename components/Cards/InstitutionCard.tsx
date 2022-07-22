@@ -1,5 +1,4 @@
 import {
-  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -20,11 +19,10 @@ interface InstitutionCardProps {
 const InstitutionCard: React.FC<InstitutionCardProps> = ({ institution }) => {
   const { width } = useWindowDimensions();
   return (
-    <Pressable>
       <View style={[styles.root, { minWidth: width * 0.9 }]}>
         <View style={styles.rowContainer}>
           <View
-            style={[styles.icon, { backgroundColor: ACCENT_COLOUR + "33" }]}
+            style={styles.icon}
           >
             <Text style={{ fontSize: 30 }}>{institution.institutionicon}</Text>
           </View>
@@ -49,7 +47,6 @@ const InstitutionCard: React.FC<InstitutionCardProps> = ({ institution }) => {
           </View>
         </View>
       </View>
-    </Pressable>
   );
 };
 
@@ -80,6 +77,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: ACCENT_COLOUR + "1A"
   },
   detailsContainer: {
     flex: 1,
@@ -91,9 +89,8 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 25,
+    fontSize: 20,
     fontFamily: "InterBold",
-    marginTop: -2.5
   },
   smallText: {
     fontSize: 15,
@@ -106,7 +103,7 @@ const styles = StyleSheet.create({
   },
   gpa: {
     flex: 1,
-    fontSize: 25,
+    fontSize: 20,
     fontFamily: "InterBold",
     textAlign: "center",
   },

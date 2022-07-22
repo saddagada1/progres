@@ -88,6 +88,10 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
     }
   }, [trigger]);
 
+  useEffect(() => {
+    status === "Attending" ? setEndDate('Present') : setEndDate('');
+  }, [status])
+  
   return (
     <Animated.View
       style={[
@@ -103,6 +107,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
           style={styles.input}
           onChangeText={(value) => setName(value)}
           value={name}
+          maxLength={25}
         />
       </View>
       <View style={styles.rowContainer}>
@@ -140,7 +145,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
       >
         {trigger && (
           <CalendarPicker
-            allowRangeSelection={true}
+            allowRangeSelection={status === "Graduated"}
             selectedDayColor={ACCENT_COLOUR}
             selectedDayTextColor={PRIMARY_COLOUR}
             textStyle={{ fontFamily: "Inter", fontSize: 15 }}
@@ -148,7 +153,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
             onDateChange={(date, type) => {
               type === "START_DATE"
                 ? date && setStartDate(date.format("MM/DD/YY"))
-                : date && setEndDate(date.format("MM/DD/YY"));
+                : date && setEndDate(date.format("MM/DD/YY"))
             }}
           />
         )}
@@ -166,7 +171,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
         onClose={() => setTriggerEmojiPicker(false)}
         onEmojiSelected={(emoji) => setIcon(emoji.emoji)}
         backdropColor="#00000000"
-        knobStyles={{ backgroundColor: ACCENT_COLOUR }}
+        knobStyles={{ backgroundColor: ACCENT_COLOUR + '33'}}
       />
     </Animated.View>
   );

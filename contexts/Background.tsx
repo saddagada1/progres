@@ -1,5 +1,5 @@
-import { SkiaMutableValue, useValue } from "@shopify/react-native-skia";
-import React, { createContext, useContext } from "react";
+import { runTiming, SkiaMutableValue, useValue } from "@shopify/react-native-skia";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useWindowDimensions } from "react-native";
 
 interface BackgroundValues {
@@ -31,6 +31,88 @@ const BackgroundProvider: React.FC<BackgroundProviderProps> = ({
   const circle3YPosition = useValue(height);
   const circle4XPosition = useValue(width);
   const circle4YPosition = useValue(height);
+  const [animate, setAnimate] = useState(true);
+  const [animsEnded, setAnimsEnded] = useState(0);
+
+  const rand = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  const animateCircle = (
+    x: SkiaMutableValue<number>,
+    y: SkiaMutableValue<number>
+  ) => {
+    const animateX = () => {
+      const randomX = rand(0, width);
+      x &&
+        runTiming(
+          x,
+          randomX,
+          { duration: Math.abs(((x.current - randomX) / 10) * 1000) },
+          () => {
+            animate && setAnimsEnded((animsEnded) => animsEnded + 1);
+          }
+        );
+    };
+    const animateY = () => {
+      const randomY = rand(0, height);
+      y &&
+        runTiming(
+          y,
+          randomY,
+          { duration: Math.abs(((y.current - randomY) / 10) * 1000) },
+          () => {
+            animate && setAnimsEnded((animsEnded) => animsEnded + 1);
+          }
+        );
+    };
+    animateX();
+    animateY();
+  };
+
+  const animateCircles = () => {
+    animateCircle(
+      circle1XPosition,
+      circle1YPosition
+    );
+    animateCircle(
+      circle2XPosition,
+      circle2YPosition
+    );
+    animateCircle(
+      circle3XPosition,
+      circle3YPosition
+    );
+    animateCircle(
+      circle4XPosition,
+      circle4YPosition
+    );
+  };
+
+  useEffect(() => {
+    if (animsEnded === 8) {
+      setAnimsEnded(0);
+      setAnimate(false);
+    }
+  }, [animsEnded]);
+
+  useEffect(() => {
+    let runAnim: NodeJS.Timeout | null = null;
+
+    if (!animate) {
+      console.log("timeout set");
+      runAnim = setTimeout(() => {
+        setAnimate(true);
+      }, 1000 * 30);
+    } else {
+      console.log("anim start");
+      animateCircles();
+    }
+
+    return () => {
+      runAnim && clearTimeout(runAnim);
+    };
+  }, [animate]);
 
   return (
     <BackgroundContext.Provider

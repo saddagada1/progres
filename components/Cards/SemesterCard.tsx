@@ -19,25 +19,34 @@ interface SemesterCardProps {
 const SemesterCard: React.FC<SemesterCardProps> = ({ semester }) => {
   const { width } = useWindowDimensions();
   return (
-    <View style={[styles.root, { minWidth: width * 0.9 }]}>
-      <View style={styles.rowContainer}>
-        <View
-          style={[styles.colour, { backgroundColor: ACCENT_COLOUR + "33" }]}
-        />
+      <View style={[styles.root, { minWidth: width * 0.9 }]}>
         <View style={styles.rowContainer}>
-          <View style={styles.detailsContainer}>
-            <Text numberOfLines={1} style={styles.name}>{semester.semestername}</Text>
-            <Text numberOfLines={1} style={styles.smallText}>
-              {semester.semesterstartdate.slice(2)} - {semester.semesterenddate.slice(2)}
-            </Text>
+          <View
+            style={styles.icon}
+          >
+            <Text style={{ fontSize: 30 }}>{semester.semestericon}</Text>
           </View>
-          <View style={styles.gpaContainer}>
-            <Text style={styles.gpa}>TBD</Text>
-            <Text style={styles.smallText}>GPA</Text>
+          <View style={styles.rowContainer}>
+            <View style={styles.detailsContainer}>
+              <Text numberOfLines={1} style={styles.name}>
+                {semester.semestername}
+              </Text>
+              <Text numberOfLines={1} style={styles.smallText}>
+                {semester.semesterstartdate} -{" "}
+                {semester.semesterenddate}
+              </Text>
+            </View>
+            <View style={styles.gpaContainer}>
+              <Text style={styles.gpa}>
+                {semester.semestergpa
+                  ? semester.semestergpa
+                  : "TBD"}
+              </Text>
+              <Text style={styles.smallText}>GPA</Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
   );
 };
 
@@ -62,13 +71,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  colour: {
+  icon: {
     width: 60,
     height: 60,
     borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: ACCENT_COLOUR + "1A"
   },
   detailsContainer: {
     flex: 1,
+    paddingRight: 20,
     justifyContent: "space-between",
     marginHorizontal: 20,
     borderRightWidth: StyleSheet.hairlineWidth,
@@ -76,22 +89,22 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 25,
+    fontSize: 20,
     fontFamily: "InterBold",
   },
   smallText: {
     fontSize: 15,
     fontFamily: "Inter",
-    color: ACCENT_COLOUR
+    color: ACCENT_COLOUR,
   },
   gpaContainer: {
     flex: 0.3,
-    alignItems: 'center',
+    alignItems: "center",
   },
   gpa: {
     flex: 1,
-    fontSize: 25,
+    fontSize: 20,
     fontFamily: "InterBold",
-    textAlign: 'center'
-  }
+    textAlign: "center",
+  },
 });
