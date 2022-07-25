@@ -1,9 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import React from "react";
 import {
   ACCENT_COLOUR,
@@ -19,34 +14,33 @@ interface SemesterCardProps {
 const SemesterCard: React.FC<SemesterCardProps> = ({ semester }) => {
   const { width } = useWindowDimensions();
   return (
-      <View style={[styles.root, { minWidth: width * 0.9 }]}>
+    <View style={[styles.root, { minWidth: width * 0.9 }]}>
+      <View style={styles.rowContainer}>
+        <View style={styles.icon}>
+          <Text style={{ fontSize: 30 }}>{semester.semestericon}</Text>
+        </View>
         <View style={styles.rowContainer}>
-          <View
-            style={styles.icon}
-          >
-            <Text style={{ fontSize: 30 }}>{semester.semestericon}</Text>
+          <View style={styles.detailsContainer}>
+            <Text numberOfLines={1} style={styles.name}>
+              {semester.semestername}
+            </Text>
+            <Text numberOfLines={1} style={styles.smallText}>
+              {semester.semesterstartdate} - {semester.semesterenddate}
+            </Text>
           </View>
-          <View style={styles.rowContainer}>
-            <View style={styles.detailsContainer}>
-              <Text numberOfLines={1} style={styles.name}>
-                {semester.semestername}
-              </Text>
-              <Text numberOfLines={1} style={styles.smallText}>
-                {semester.semesterstartdate} -{" "}
-                {semester.semesterenddate}
-              </Text>
-            </View>
-            <View style={styles.gpaContainer}>
-              <Text style={styles.gpa}>
-                {semester.semestergpa
-                  ? semester.semestergpa
-                  : "TBD"}
-              </Text>
-              <Text style={styles.smallText}>GPA</Text>
-            </View>
+          <View style={styles.gpaContainer}>
+            <Text style={styles.gpa}>
+              {semester.semesterusecalculatedgpa
+                ? semester.semestercalculatedgpa
+                  ? semester.semestercalculatedgpa
+                  : "TBD"
+                : semester.semestersetgpa}
+            </Text>
+            <Text style={styles.smallText}>GPA</Text>
           </View>
         </View>
       </View>
+    </View>
   );
 };
 
@@ -77,7 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: ACCENT_COLOUR + "1A"
+    backgroundColor: ACCENT_COLOUR + "1A",
   },
   detailsContainer: {
     flex: 1,

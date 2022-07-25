@@ -150,7 +150,7 @@ const Institution: React.FC<InstitutionProps> = ({ navigation, route }) => {
                     institutionname: institutionname,
                     sessionid: item.sessionid,
                     sessionname: item.sessionname,
-                    sessiongpa: item.sessiongpa
+                    sessiongpa: item.sessionusecalculatedgpa === 0 ? item.sessionsetgpa : item.sessioncalculatedgpa
                   })
                 }
               >

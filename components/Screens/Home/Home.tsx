@@ -15,7 +15,7 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
 import Header from "../../Header/Header";
 import { FlatList } from "react-native-gesture-handler";
-import { useDataContext } from "../../../contexts/Data";
+import { InstitutionSchema, useDataContext } from "../../../contexts/Data";
 import { LineChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/Feather";
 import Animated, {
@@ -28,6 +28,7 @@ import BannerAd from "../../Ads/BannerAd";
 import CreateInstitutionModal from "../../Modals/CreateInstitutionModal";
 import InstitutionCard from "../../Cards/InstitutionCard";
 import Background from "../../Background/Background";
+import EditInstitutionModal from "../../Modals/EditInstitutionModal";
 
 type HomeProps = StackScreenProps<MainStackParams, "Home">;
 
@@ -44,7 +45,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
   const [triggerChart, setTriggerChart] = useState(false);
   const [triggerSelect, setTriggerSelect] = useState(false);
+  const [institution, setInstitution] = useState<InstitutionSchema | undefined>();
   const [triggerCreate, setTriggerCreate] = useState(false);
+  const [triggerEdit, setTriggerEdit] = useState(false);
 
   const handleChartToggle = () => {
     if (triggerChart) {
@@ -58,6 +61,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     handleChartToggle();
   }, [triggerChart]);
 
+  // useEffect(() => {
+  //   if (!triggerEdit) {
+  //     setInstitution(undefined);
+  //   }
+  // }, [triggerEdit])
+
   return (
     <View style={styles.root}>
       <Background />
@@ -65,6 +74,11 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         trigger={triggerCreate}
         setTrigger={setTriggerCreate}
       />
+      {institution && <EditInstitutionModal
+        trigger={triggerEdit}
+        setTrigger={setTriggerEdit}
+        institution={institution}
+      />}
       <View style={[styles.container, { width: width * 0.9 }]}>
         <Header />
         <Text style={styles.gpaHeader}>Combined GPA</Text>
@@ -145,9 +159,13 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                 navigation.navigate("Institution", {
                   institutionid: item.institutionid,
                   institutionname: item.institutionname,
-                  institutiongpa: item.institutiongpa,
+                  institutiongpa: item.institutioncalculatedgpa === 0 ? item.institutionsetgpa : item.institutioncalculatedgpa
                 })
               }
+              onLongPress={() => {
+                setInstitution(item);
+                setTriggerEdit(true)
+              }}
             >
               <InstitutionCard institution={item} />
             </Pressable>

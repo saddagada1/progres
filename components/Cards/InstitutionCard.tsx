@@ -38,9 +38,11 @@ const InstitutionCard: React.FC<InstitutionCardProps> = ({ institution }) => {
             </View>
             <View style={styles.gpaContainer}>
               <Text style={styles.gpa}>
-                {institution.institutiongpa
-                  ? institution.institutiongpa
-                  : "TBD"}
+                {institution.institutionusecalculatedgpa
+                  ? institution.institutioncalculatedgpa ?
+                  institution.institutioncalculatedgpa :
+                  "TBD"
+                  : institution.institutionsetgpa}
               </Text>
               <Text style={styles.smallText}>GPA</Text>
             </View>
