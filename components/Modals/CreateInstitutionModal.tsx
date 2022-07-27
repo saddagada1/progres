@@ -15,7 +15,6 @@ import {
   SECONDARY_COLOUR,
 } from "../../constants/basic";
 import EmojiPicker from "rn-emoji-keyboard";
-import CalendarPicker from "react-native-calendar-picker";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -37,10 +36,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
   const { width, height } = useWindowDimensions();
   const [name, setName] = useState("");
   const [useCalculatedGpa, setUseCalculatedGpa] = useState(true);
-  const [completed, setCompleted] = useState(true);
   const [icon, setIcon] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [gpa, setGpa] = useState("");
   const [errors, setErrors] = useState("");
   const [triggerEmojiPicker, setTriggerEmojiPicker] = useState(false);
@@ -65,17 +61,14 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
 
   const reset = () => {
     setName("");
-    setStartDate("");
-    setEndDate("");
     setUseCalculatedGpa(true);
-    setCompleted(true);
     setErrors("");
     setIcon("");
     setGpa("");
   };
 
   const handleSubmit = () => {
-    if (!name || !startDate || !endDate || !icon) {
+    if (!name || !icon) {
       setErrors("Required Fields Left Empty");
       return;
     } else {
@@ -84,7 +77,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
         return;
       } else if (useCalculatedGpa) {
         setErrors("");
-        dataCtx?.createInstitution(name, startDate, endDate, icon, 1);
+        dataCtx?.createInstitution(name, icon, 1);
         setTrigger(false);
       } else {
         const isValid = isValidFloat(gpa);
@@ -100,8 +93,6 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
         setErrors("");
         dataCtx?.createInstitution(
           name,
-          startDate,
-          endDate,
           icon,
           0,
           parsedGpa
@@ -118,16 +109,11 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
     }
   }, [trigger]);
 
-  useEffect(() => {
-    setStartDate("");
-    !completed ? setEndDate("Present") : setEndDate("");
-  }, [completed]);
-
   return (
     <Animated.View
       style={[
         styles.root,
-        { width: width * 0.9, height: errors ? height * 0.875 : height * 0.83 },
+        { width: width * 0.9, height: errors ? height * 0.45 : height * 0.4 },
         modalStyle,
       ]}
     >
@@ -170,46 +156,6 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
           onValueChange={() => setUseCalculatedGpa(!useCalculatedGpa)}
           value={useCalculatedGpa}
         />
-      </View>
-      <View style={styles.rowContainer}>
-        <Text style={styles.label}>
-          {completed ? "Date Range" : "Start Date"}
-        </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text style={styles.smallText}>Graduated?</Text>
-          <Switch
-            trackColor={{ false: ACCENT_COLOUR, true: SECONDARY_COLOUR }}
-            thumbColor={PRIMARY_COLOUR}
-            ios_backgroundColor={ACCENT_COLOUR}
-            onValueChange={() => setCompleted(!completed)}
-            value={completed}
-          />
-        </View>
-      </View>
-      <View
-        style={[styles.calendar, { width: width * 0.8, height: height * 0.35 }]}
-      >
-        {trigger && (
-          <CalendarPicker
-            key={completed}
-            allowRangeSelection={completed}
-            selectedDayColor={ACCENT_COLOUR}
-            selectedDayTextColor={PRIMARY_COLOUR}
-            textStyle={{ fontFamily: "Inter", fontSize: 15 }}
-            width={width * 0.75}
-            onDateChange={(date, type) => {
-              type === "START_DATE"
-                ? date && setStartDate(date.format("MM/DD/YY"))
-                : date && setEndDate(date.format("MM/DD/YY"));
-            }}
-          />
-        )}
       </View>
       {errors ? <Text style={styles.errors}>{errors}</Text> : null}
       <View style={[styles.rowContainer, styles.actions]}>
@@ -300,13 +246,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
   },
-  calendar: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: ACCENT_COLOUR,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-  },
   actions: {
     position: "absolute",
     bottom: 0,
@@ -327,16 +266,10 @@ const styles = StyleSheet.create({
     backgroundColor: SECONDARY_COLOUR,
     color: PRIMARY_COLOUR,
   },
-  smallText: {
-    fontSize: 18,
-    fontFamily: "Inter",
-    color: ACCENT_COLOUR,
-  },
   errors: {
     fontSize: 15,
     fontFamily: "Inter",
     color: SECONDARY_COLOUR,
-    marginVertical: 20,
     backgroundColor: ERROR_COLOUR + "33",
     paddingVertical: 2.5,
     paddingHorizontal: 5,

@@ -15,9 +15,7 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
 import Header from "../../Header/Header";
 import { FlatList } from "react-native-gesture-handler";
-import SemesterCard from "../../Cards/SemesterCard";
-import CreateSemesterModal from "../../Modals/CreateSemesterModal";
-import { SemesterSchema, useDataContext } from "../../../contexts/Data";
+import { SessionSchema, useDataContext } from "../../../contexts/Data";
 import { LineChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/Feather";
 import Animated, {
@@ -28,12 +26,11 @@ import Animated, {
 } from "react-native-reanimated";
 import BannerAd from "../../Ads/BannerAd";
 import Background from "../../Background/Background";
-import EditSemesterModal from "../../Modals/EditSemesterModal";
 
-type SessionProps = StackScreenProps<MainStackParams, "Session">;
+type SemesterProps = StackScreenProps<MainStackParams, "Semester">;
 
-const Session: React.FC<SessionProps> = ({ navigation, route }) => {
-  const { institutionname, session } = route.params;
+const Semester: React.FC<SemesterProps> = ({ navigation, route }) => {
+  const { sessionname, semester } = route.params;
   const dataCtx = useDataContext();
   const { width, height } = useWindowDimensions();
   const chartContainerHeight = useSharedValue(0);
@@ -43,7 +40,7 @@ const Session: React.FC<SessionProps> = ({ navigation, route }) => {
     };
   }, []);
 
-  const [semester, setSemester] = useState<SemesterSchema | undefined>();
+  const [course, setCourse] = useState<SessionSchema | undefined>();
   const [triggerChart, setTriggerChart] = useState(false);
   const [triggerSelect, setTriggerSelect] = useState(false);
   const [triggerCreate, setTriggerCreate] = useState(false);
@@ -64,27 +61,16 @@ const Session: React.FC<SessionProps> = ({ navigation, route }) => {
   return (
     <View style={styles.root}>
       <Background />
-      <CreateSemesterModal
-        trigger={triggerCreate}
-        setTrigger={setTriggerCreate}
-        session={session}
-      />
-      {semester && (
-        <EditSemesterModal
-          trigger={triggerEdit}
-          setTrigger={setTriggerEdit}
-          semester={semester}
-        />
-      )}
+
       <View style={[styles.container, { width: width * 0.9 }]}>
-        <Header previousTitle={institutionname} />
-        <Text style={styles.name}>{session.sessionname}</Text>
-        <Text style={styles.gpaHeader}>Sessional GPA</Text>
+        <Header previousTitle={sessionname} />
+        <Text style={styles.name}>{semester.semestername}</Text>
+        <Text style={styles.gpaHeader}>Cumulative GPA</Text>
         <Text style={styles.gpa}>
-          {session.sessionsetgpa
-            ? session.sessionsetgpa
-            : session.sessioncalculatedgpa
-            ? session.sessioncalculatedgpa
+          {semester.semestersetgpa
+            ? semester.semestersetgpa
+            : semester.semestercalculatedgpa
+            ? semester.semestercalculatedgpa
             : "TBD"}
         </Text>
         <View style={[styles.rowContainer]}>
@@ -130,7 +116,7 @@ const Session: React.FC<SessionProps> = ({ navigation, route }) => {
         </Animated.View>
         {/* <BannerAd /> */}
         <View style={styles.flatlistActionsContainer}>
-          <Text style={styles.flatlistHeader}>Semesters</Text>
+          <Text style={styles.flatlistHeader}>Courses</Text>
           <View style={{ flexDirection: "row" }}>
             <Pressable
               onPress={() => {
@@ -158,21 +144,18 @@ const Session: React.FC<SessionProps> = ({ navigation, route }) => {
           style={{ width }}
           data={dataCtx?.semesters}
           renderItem={({ item }) =>
-            item.semestersession === session.sessionid ? (
+            item.semestersession === semester.semesterid ? (
               <Pressable
                 onPress={() =>
-                  navigation.navigate("Semester", {
-                    sessionname: session.sessionname,
-                    semester: item,
+                  navigation.navigate("Course", {
+                    semestername: semester.semestername,
                   })
                 }
                 onLongPress={() => {
-                  setSemester(item);
+                  //   setSession(item);
                   setTriggerEdit(true);
                 }}
-              >
-                <SemesterCard semester={item} />
-              </Pressable>
+              ></Pressable>
             ) : null
           }
           contentContainerStyle={{ alignItems: "center", paddingTop: 15 }}
@@ -183,7 +166,7 @@ const Session: React.FC<SessionProps> = ({ navigation, route }) => {
   );
 };
 
-export default Session;
+export default Semester;
 
 const styles = StyleSheet.create({
   root: {

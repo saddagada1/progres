@@ -61,12 +61,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     handleChartToggle();
   }, [triggerChart]);
 
-  // useEffect(() => {
-  //   if (!triggerEdit) {
-  //     setInstitution(undefined);
-  //   }
-  // }, [triggerEdit])
-
   return (
     <View style={styles.root}>
       <Background />
@@ -157,9 +151,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             <Pressable
               onPress={() =>
                 navigation.navigate("Institution", {
-                  institutionid: item.institutionid,
-                  institutionname: item.institutionname,
-                  institutiongpa: item.institutioncalculatedgpa === 0 ? item.institutionsetgpa : item.institutioncalculatedgpa
+                  institution: item
                 })
               }
               onLongPress={() => {

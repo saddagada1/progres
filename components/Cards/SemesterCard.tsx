@@ -24,9 +24,6 @@ const SemesterCard: React.FC<SemesterCardProps> = ({ semester }) => {
             <Text numberOfLines={1} style={styles.name}>
               {semester.semestername}
             </Text>
-            <Text numberOfLines={1} style={styles.smallText}>
-              {semester.semesterstartdate} - {semester.semesterenddate}
-            </Text>
           </View>
           <View style={styles.gpaContainer}>
             <Text style={styles.gpa}>
@@ -83,8 +80,9 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 25,
     fontFamily: "InterBold",
+    textAlignVertical: 'center'
   },
   smallText: {
     fontSize: 15,

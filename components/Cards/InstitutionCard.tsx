@@ -28,12 +28,8 @@ const InstitutionCard: React.FC<InstitutionCardProps> = ({ institution }) => {
           </View>
           <View style={styles.rowContainer}>
             <View style={styles.detailsContainer}>
-              <Text numberOfLines={1} style={styles.name}>
+              <Text numberOfLines={2} style={styles.name}>
                 {institution.institutionname}
-              </Text>
-              <Text numberOfLines={1} style={styles.smallText}>
-                {institution.institutionstartdate} -{" "}
-                {institution.institutionenddate}
               </Text>
             </View>
             <View style={styles.gpaContainer}>
@@ -91,8 +87,9 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 25,
     fontFamily: "InterBold",
+    textAlignVertical: 'center'
   },
   smallText: {
     fontSize: 15,

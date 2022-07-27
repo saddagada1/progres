@@ -24,9 +24,6 @@ const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
             <Text numberOfLines={1} style={styles.name}>
               {session.sessionname}
             </Text>
-            <Text numberOfLines={1} style={styles.smallText}>
-              {session.sessionstartdate} - {session.sessionenddate}
-            </Text>
           </View>
           <View style={styles.gpaContainer}>
             <Text style={styles.gpa}>
@@ -83,8 +80,9 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 25,
     fontFamily: "InterBold",
+    textAlignVertical: 'center'
   },
   smallText: {
     fontSize: 15,

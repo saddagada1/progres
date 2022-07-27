@@ -7,6 +7,9 @@ import Loading from '../Loading/Loading';
 import Settings from '../Screens/Settings/Settings';
 import Institution from '../Screens/Institution/Institution';
 import Session from '../Screens/Session/Session';
+import { InstitutionSchema, SemesterSchema, SessionSchema } from '../../contexts/Data';
+import Semester from '../Screens/Semester/Semester';
+import Course from '../Screens/Course/Course';
 
 export type MainStackParams = {
     Loading: undefined
@@ -14,8 +17,10 @@ export type MainStackParams = {
     ProfileSetup: undefined
     Settings: undefined
     Home: undefined
-    Institution: {institutionid: number, institutionname: string, institutiongpa: number | null}
-    Session: {institutionname: string, sessionid: number, sessionname: string, sessiongpa: number | null}
+    Institution: {institution: InstitutionSchema}
+    Session: {institutionname: string, session: SessionSchema}
+    Semester: {sessionname: string, semester: SemesterSchema}
+    Course: {semestername: string}
 };
 const MainStack = createStackNavigator<MainStackParams>();
 
@@ -29,6 +34,8 @@ const MainNavigator = () => {
         <MainStack.Screen name="Home" component={Home} />
         <MainStack.Screen name='Institution' component={Institution} />
         <MainStack.Screen name='Session' component={Session} />
+        <MainStack.Screen name='Semester' component={Semester} />
+        <MainStack.Screen name='Course' component={Course} />
     </MainStack.Navigator>
   )
 }

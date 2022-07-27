@@ -15,7 +15,7 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { MainStackParams } from "../../Navigators/MainNavigator";
 import Header from "../../Header/Header";
 import { FlatList } from "react-native-gesture-handler";
-import { useDataContext } from "../../../contexts/Data";
+import { SessionSchema, useDataContext } from "../../../contexts/Data";
 import { LineChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/Feather";
 import Animated, {
@@ -28,11 +28,12 @@ import BannerAd from "../../Ads/BannerAd";
 import SessionCard from "../../Cards/SessionCard";
 import CreateSessionModal from "../../Modals/CreateSessionModal";
 import Background from "../../Background/Background";
+import EditSessionModal from "../../Modals/EditSessionModal";
 
 type InstitutionProps = StackScreenProps<MainStackParams, "Institution">;
 
 const Institution: React.FC<InstitutionProps> = ({ navigation, route }) => {
-  const { institutionid, institutionname, institutiongpa } = route.params;
+  const { institution } = route.params;
   const dataCtx = useDataContext();
   const { width, height } = useWindowDimensions();
   const chartContainerHeight = useSharedValue(0);
@@ -42,9 +43,11 @@ const Institution: React.FC<InstitutionProps> = ({ navigation, route }) => {
     };
   }, []);
 
+  const [session, setSession] = useState<SessionSchema | undefined>();
   const [triggerChart, setTriggerChart] = useState(false);
   const [triggerSelect, setTriggerSelect] = useState(false);
   const [triggerCreate, setTriggerCreate] = useState(false);
+  const [triggerEdit, setTriggerEdit] = useState(false);
 
   const handleChartToggle = () => {
     if (triggerChart) {
@@ -64,14 +67,26 @@ const Institution: React.FC<InstitutionProps> = ({ navigation, route }) => {
       <CreateSessionModal
         trigger={triggerCreate}
         setTrigger={setTriggerCreate}
-        institutionId={institutionid}
-        institutionName={institutionname}
+        institution={institution}
       />
+      {session && (
+        <EditSessionModal
+          trigger={triggerEdit}
+          setTrigger={setTriggerEdit}
+          session={session}
+        />
+      )}
       <View style={[styles.container, { width: width * 0.9 }]}>
         <Header previousTitle="Home" />
-        <Text style={styles.name}>{institutionname}</Text>
+        <Text style={styles.name}>{institution.institutionname}</Text>
         <Text style={styles.gpaHeader}>Overall GPA</Text>
-        <Text style={styles.gpa}>{institutiongpa ? institutiongpa : "TBD"}</Text>
+        <Text style={styles.gpa}>
+          {institution.institutionsetgpa
+            ? institution.institutionsetgpa
+            : institution.institutioncalculatedgpa
+            ? institution.institutioncalculatedgpa
+            : "TBD"}
+        </Text>
         <View style={[styles.rowContainer]}>
           <Text style={styles.smallText}>Scale of 4</Text>
           <Pressable
@@ -143,16 +158,18 @@ const Institution: React.FC<InstitutionProps> = ({ navigation, route }) => {
           style={{ width }}
           data={dataCtx?.sessions}
           renderItem={({ item }) =>
-            item.sessioninstitution === institutionid ? (
+            item.sessioninstitution === institution.institutionid ? (
               <Pressable
                 onPress={() =>
                   navigation.navigate("Session", {
-                    institutionname: institutionname,
-                    sessionid: item.sessionid,
-                    sessionname: item.sessionname,
-                    sessiongpa: item.sessionusecalculatedgpa === 0 ? item.sessionsetgpa : item.sessioncalculatedgpa
+                    institutionname: institution.institutionname,
+                    session: item
                   })
                 }
+                onLongPress={() => {
+                  setSession(item);
+                  setTriggerEdit(true);
+                }}
               >
                 <SessionCard session={item} />
               </Pressable>

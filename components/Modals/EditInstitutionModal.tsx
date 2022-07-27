@@ -1,20 +1,20 @@
 import {
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   useWindowDimensions,
   View,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ACCENT_COLOUR,
+  ERROR_COLOUR,
   PRIMARY_COLOUR,
   SECONDARY_COLOUR,
 } from "../../constants/basic";
-import Select from "../Select/Select";
 import EmojiPicker from "rn-emoji-keyboard";
-import CalendarPicker from "react-native-calendar-picker";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -22,7 +22,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { InstitutionSchema, useDataContext } from "../../contexts/Data";
-import moment from "moment";
 
 interface EditInstitutionModalProps {
   trigger: boolean;
@@ -38,20 +37,21 @@ const EditInstitutionModal: React.FC<EditInstitutionModalProps> = ({
   const dataCtx = useDataContext();
   const { width, height } = useWindowDimensions();
   const [name, setName] = useState("");
-  const [status, setStatus] = useState("");
+  const [useCalculatedGpa, setUseCalculatedGpa] = useState(true);
   const [icon, setIcon] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [gpa, setGpa] = useState("");
-  const [dateChanged, setDateChanged] = useState(false);
+  const [errors, setErrors] = useState("");
   const [triggerEmojiPicker, setTriggerEmojiPicker] = useState(false);
-  const calendarRef = useRef<CalendarPicker | null>(null)
   const modalPosition = useSharedValue(height);
   const modalStyle = useAnimatedStyle(() => {
     return {
       transform: [{ translateY: modalPosition.value }],
     };
   }, []);
+
+  const isValidFloat = (value: string) => {
+    return /^-?[\d]*(\.[\d]+)?$/g.test(value);
+  };
 
   const handleCreateModalToggle = () => {
     if (trigger) {
@@ -63,67 +63,64 @@ const EditInstitutionModal: React.FC<EditInstitutionModalProps> = ({
 
   const reset = () => {
     setName("");
-    setStartDate("");
-    setEndDate("");
-    setStatus("");
+    setUseCalculatedGpa(true);
+    setErrors("");
     setIcon("");
     setGpa("");
-    setDateChanged(false);
   };
 
   const handleSubmit = () => {
-    // if (status === "Graduated" && !gpa) {
-    //   return;
-    // } else if (status === "Attending") {
-    //   dataCtx?.updateInstitution(
-    //     institution.institutionid,
-    //     name ? name : institution.institutionname,
-    //     startDate ? startDate : institution.institutionstartdate,
-    //     endDate ? endDate : institution.institutionenddate,
-    //     icon ? icon : institution.institutionicon,
-    //     status ? status : institution.institutionstatus
-    //   );
-    //   setTrigger(false);
-    // } else {
-    //   dataCtx?.updateInstitution(
-    //     institution.institutionid,
-    //     name ? name : institution.institutionname,
-    //     startDate ? startDate : institution.institutionstartdate,
-    //     endDate ? endDate : institution.institutionenddate,
-    //     icon ? icon : institution.institutionicon,
-    //     status ? status : institution.institutionstatus,
-
-    //   );
-    //   setTrigger(false);
-    // }
+    if (!name || !icon) {
+      setErrors("Required Fields Left Empty");
+      return;
+    } else {
+      if (!useCalculatedGpa && !gpa) {
+        setErrors("Please Enter a GPA");
+        return;
+      } else if (useCalculatedGpa) {
+        setErrors("");
+        dataCtx?.updateInstitution(institution.institutionid, name, icon, 1);
+        setTrigger(false);
+      } else {
+        const isValid = isValidFloat(gpa);
+        if (!isValid) {
+          setErrors("Please Enter a Valid GPA");
+          return;
+        }
+        const parsedGpa = parseFloat(gpa);
+        if (parsedGpa > 4 || parsedGpa <= 0) {
+          setErrors("Please Enter a Valid GPA");
+          return;
+        }
+        setErrors("");
+        dataCtx?.updateInstitution(
+          institution.institutionid,
+          name,
+          icon,
+          0,
+          parsedGpa
+        );
+        setTrigger(false);
+      }
+    }
   };
 
   useEffect(() => {
+    setName(institution.institutionname);
+    setIcon(institution.institutionicon);
+    institution.institutionusecalculatedgpa === 1 ? setUseCalculatedGpa(true) : setUseCalculatedGpa(false);
+    institution.institutionsetgpa ? setGpa(institution.institutionsetgpa.toString()) : setGpa("");
     handleCreateModalToggle();
-    // setName(institution.institutionname);
-    // setStatus(institution.institutionstatus);
-    // setIcon(institution.institutionicon);
-    // setStartDate(institution.institutionstartdate);
-    // setEndDate(institution.institutionenddate);
-    // institution.institutiongpa
-    //   ? setGpa(institution.institutiongpa.toString())
-    //   : setGpa("");
     if (!trigger) {
       reset();
     }
   }, [trigger]);
 
-  useEffect(() => {
-    status === "Attending"
-      ? setEndDate("Present")
-      : setEndDate(institution.institutionenddate);
-  }, [status]);
-
   return (
     <Animated.View
       style={[
         styles.root,
-        { width: width * 0.9, height: height * 0.85 },
+        { width: width * 0.9, height: errors ? height * 0.45 : height * 0.4 },
         modalStyle,
       ]}
     >
@@ -138,24 +135,13 @@ const EditInstitutionModal: React.FC<EditInstitutionModalProps> = ({
         />
       </View>
       <View style={styles.rowContainer}>
-        <Text style={styles.label}>Status</Text>
-        {trigger && (
-          <Select
-            initialValue={status}
-            values={["Graduated", "Attending"]}
-            width="50%"
-            onValueChange={setStatus}
-          />
-        )}
-      </View>
-      <View style={styles.rowContainer}>
         <View style={styles.inlineRowContainer}>
           <Text style={styles.label}>Icon</Text>
           <Pressable onPress={() => setTriggerEmojiPicker(true)}>
             <Text style={styles.icon}>{icon}</Text>
           </Pressable>
         </View>
-        {status === "Graduated" && (
+        {!useCalculatedGpa && (
           <View style={[styles.inlineRowContainer, { marginLeft: 20 }]}>
             <Text style={styles.label}>GPA</Text>
             <TextInput
@@ -168,34 +154,17 @@ const EditInstitutionModal: React.FC<EditInstitutionModalProps> = ({
           </View>
         )}
       </View>
-      <Text style={styles.label}>Date</Text>
-      <View
-        style={[styles.calendar, { width: width * 0.8, height: height * 0.35 }]}
-      >
-        {trigger && (
-          <CalendarPicker
-            allowRangeSelection={status === "Graduated"}
-            selectedDayColor={ACCENT_COLOUR}
-            selectedDayTextColor={PRIMARY_COLOUR}
-            textStyle={{ fontFamily: "Inter", fontSize: 15 }}
-            width={width * 0.75}
-            selectedStartDate={
-              !dateChanged ? moment(startDate, "MM/DD/YY").toDate() : undefined
-            }
-            selectedEndDate={
-              !dateChanged && endDate !== "Present"
-                ? moment(endDate, "MM/DD/YY").toDate()
-                : undefined
-            }
-            onDateChange={(date, type) => {
-              setDateChanged(true);
-              type === "START_DATE"
-                ? date && setStartDate(date.format("MM/DD/YY"))
-                : date && setEndDate(date.format("MM/DD/YY"));
-            }}
-          />
-        )}
+      <View style={styles.rowContainer}>
+        <Text style={styles.label}>Use Calculated GPA</Text>
+        <Switch
+          trackColor={{ false: ACCENT_COLOUR, true: SECONDARY_COLOUR }}
+          thumbColor={PRIMARY_COLOUR}
+          ios_backgroundColor={ACCENT_COLOUR}
+          onValueChange={() => setUseCalculatedGpa(!useCalculatedGpa)}
+          value={useCalculatedGpa}
+        />
       </View>
+      {errors ? <Text style={styles.errors}>{errors}</Text> : null}
       <View style={[styles.rowContainer, styles.actions]}>
         <Pressable style={{ flex: 1 }} onPress={() => setTrigger(false)}>
           <Text style={[styles.exit, styles.button]}>Exit</Text>
@@ -284,14 +253,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
   },
-  calendar: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: ACCENT_COLOUR,
-    borderRadius: 10,
-    marginVertical: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-  },
   actions: {
     position: "absolute",
     bottom: 0,
@@ -311,5 +272,14 @@ const styles = StyleSheet.create({
   submit: {
     backgroundColor: SECONDARY_COLOUR,
     color: PRIMARY_COLOUR,
+  },
+  errors: {
+    fontSize: 15,
+    fontFamily: "Inter",
+    color: SECONDARY_COLOUR,
+    backgroundColor: ERROR_COLOUR + "33",
+    paddingVertical: 2.5,
+    paddingHorizontal: 5,
+    borderRadius: 5,
   },
 });

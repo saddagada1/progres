@@ -14,8 +14,7 @@ import {
   PRIMARY_COLOUR,
   SECONDARY_COLOUR,
 } from "../../constants/basic";
-import { useDataContext } from "../../contexts/Data";
-import CalendarPicker from "react-native-calendar-picker";
+import { SessionSchema, useDataContext } from "../../contexts/Data";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -27,24 +26,19 @@ import EmojiPicker from "rn-emoji-keyboard";
 interface CreateSemesterModalProps {
   trigger: boolean;
   setTrigger: React.Dispatch<React.SetStateAction<boolean>>;
-  sessionId: number;
-  sessionName: string;
+  session: SessionSchema;
 }
 
 const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
   trigger,
   setTrigger,
-  sessionId,
-  sessionName,
+  session
 }) => {
   const dataCtx = useDataContext();
   const { width, height } = useWindowDimensions();
   const [name, setName] = useState("");
   const [useCalculatedGpa, setUseCalculatedGpa] = useState(true);
-  const [completed, setCompleted] = useState(true);
   const [icon, setIcon] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [gpa, setGpa] = useState("");
   const [errors, setErrors] = useState("");
   const [triggerEmojiPicker, setTriggerEmojiPicker] = useState(false);
@@ -69,17 +63,14 @@ const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
 
   const reset = () => {
     setName("");
-    setStartDate("");
-    setEndDate("");
     setUseCalculatedGpa(true);
-    setCompleted(true);
     setErrors("");
     setIcon("");
     setGpa("");
   };
 
   const handleSubmit = () => {
-    if (!name || !startDate || !endDate || !icon) {
+    if (!name || !icon) {
       setErrors("Required Fields Left Empty");
       return;
     } else {
@@ -89,11 +80,9 @@ const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
       } else if (useCalculatedGpa) {
         setErrors("");
         dataCtx?.createSemester(
-          sessionId,
-          sessionName,
+          session.sessionid,
+          session.sessionname,
           name,
-          startDate,
-          endDate,
           icon,
           1
         );
@@ -111,11 +100,9 @@ const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
         }
         setErrors("");
         dataCtx?.createSemester(
-          sessionId,
-          sessionName,
+          session.sessionid,
+          session.sessionname,
           name,
-          startDate,
-          endDate,
           icon,
           0,
           parsedGpa
@@ -132,16 +119,11 @@ const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
     }
   }, [trigger]);
 
-  useEffect(() => {
-    setStartDate("");
-    !completed ? setEndDate("Present") : setEndDate("");
-  }, [completed]);
-
   return (
     <Animated.View
       style={[
         styles.root,
-        { width: width * 0.9, height: errors ? height * 0.875 : height * 0.83 },
+        { width: width * 0.9, height: errors ? height * 0.45 : height * 0.4 },
         modalStyle,
       ]}
     >
@@ -184,46 +166,6 @@ const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
           onValueChange={() => setUseCalculatedGpa(!useCalculatedGpa)}
           value={useCalculatedGpa}
         />
-      </View>
-      <View style={styles.rowContainer}>
-        <Text style={styles.label}>
-          {completed ? "Date Range" : "Start Date"}
-        </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text style={styles.smallText}>Completed?</Text>
-          <Switch
-            trackColor={{ false: ACCENT_COLOUR, true: SECONDARY_COLOUR }}
-            thumbColor={PRIMARY_COLOUR}
-            ios_backgroundColor={ACCENT_COLOUR}
-            onValueChange={() => setCompleted(!completed)}
-            value={completed}
-          />
-        </View>
-      </View>
-      <View
-        style={[styles.calendar, { width: width * 0.8, height: height * 0.35 }]}
-      >
-        {trigger && (
-          <CalendarPicker
-            key={completed}
-            allowRangeSelection={completed}
-            selectedDayColor={ACCENT_COLOUR}
-            selectedDayTextColor={PRIMARY_COLOUR}
-            textStyle={{ fontFamily: "Inter", fontSize: 15 }}
-            width={width * 0.75}
-            onDateChange={(date, type) => {
-              type === "START_DATE"
-                ? date && setStartDate(date.format("MM/DD/YY"))
-                : date && setEndDate(date.format("MM/DD/YY"));
-            }}
-          />
-        )}
       </View>
       {errors ? <Text style={styles.errors}>{errors}</Text> : null}
       <View style={[styles.rowContainer, styles.actions]}>
@@ -314,13 +256,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
   },
-  calendar: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: ACCENT_COLOUR,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-  },
   actions: {
     position: "absolute",
     bottom: 0,
@@ -341,16 +276,10 @@ const styles = StyleSheet.create({
     backgroundColor: SECONDARY_COLOUR,
     color: PRIMARY_COLOUR,
   },
-  smallText: {
-    fontSize: 18,
-    fontFamily: "Inter",
-    color: ACCENT_COLOUR,
-  },
   errors: {
     fontSize: 15,
     fontFamily: "Inter",
     color: SECONDARY_COLOUR,
-    marginVertical: 20,
     backgroundColor: ERROR_COLOUR + "33",
     paddingVertical: 2.5,
     paddingHorizontal: 5,

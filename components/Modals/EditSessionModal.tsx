@@ -15,26 +15,24 @@ import {
   SECONDARY_COLOUR,
 } from "../../constants/basic";
 import EmojiPicker from "rn-emoji-keyboard";
-import CalendarPicker from "react-native-calendar-picker";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { InstitutionSchema, useDataContext } from "../../contexts/Data";
-import moment from "moment";
+import { SessionSchema, useDataContext } from "../../contexts/Data";
 
-interface CreateInstitutionModalProps {
+interface EditSessionModalProps {
   trigger: boolean;
   setTrigger: React.Dispatch<React.SetStateAction<boolean>>;
-  institution: InstitutionSchema;
+  session: SessionSchema;
 }
 
-const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
+const EditSessionModal: React.FC<EditSessionModalProps> = ({
   trigger,
   setTrigger,
-  institution
+  session,
 }) => {
   const dataCtx = useDataContext();
   const { width, height } = useWindowDimensions();
@@ -81,9 +79,8 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
         return;
       } else if (useCalculatedGpa) {
         setErrors("");
-        dataCtx?.createSession(
-          institution.institutionid,
-          institution.institutionname,
+        dataCtx?.updateSession(
+          session.sessionid,
           name,
           icon,
           1
@@ -101,9 +98,8 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
           return;
         }
         setErrors("");
-        dataCtx?.createSession(
-          institution.institutionid,
-          institution.institutionname,
+        dataCtx?.updateSession(
+          session.sessionid,
           name,
           icon,
           0,
@@ -115,6 +111,14 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
   };
 
   useEffect(() => {
+    setName(session.sessionname);
+    setIcon(session.sessionicon);
+    session.sessionusecalculatedgpa === 1
+      ? setUseCalculatedGpa(true)
+      : setUseCalculatedGpa(false);
+    session.sessionsetgpa
+      ? setGpa(session.sessionsetgpa.toString())
+      : setGpa("");
     handleCreateModalToggle();
     if (!trigger) {
       reset();
@@ -125,11 +129,14 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
     <Animated.View
       style={[
         styles.root,
-        { width: width * 0.9, height: errors ? height * 0.45 : height * 0.4 },
+        {
+          width: width * 0.9,
+          height: errors ? height * 0.45 : height * 0.4,
+        },
         modalStyle,
       ]}
     >
-      <Text style={styles.header}>New Session</Text>
+      <Text style={styles.header}>Edit Session</Text>
       <View style={styles.rowContainer}>
         <Text style={styles.label}>Name</Text>
         <TextInput
@@ -175,7 +182,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
           <Text style={[styles.exit, styles.button]}>Exit</Text>
         </Pressable>
         <Pressable style={{ flex: 1 }} onPress={() => handleSubmit()}>
-          <Text style={[styles.submit, styles.button]}>Create</Text>
+          <Text style={[styles.submit, styles.button]}>Save</Text>
         </Pressable>
       </View>
       <EmojiPicker
@@ -189,7 +196,7 @@ const CreateInstitutionModal: React.FC<CreateInstitutionModalProps> = ({
   );
 };
 
-export default CreateInstitutionModal;
+export default EditSessionModal;
 
 const styles = StyleSheet.create({
   root: {

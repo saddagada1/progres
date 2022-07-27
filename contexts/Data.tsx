@@ -7,8 +7,6 @@ const db = SQLite.openDatabase("data");
 export interface InstitutionSchema {
   institutionid: number;
   institutionname: string;
-  institutionstartdate: string;
-  institutionenddate: string;
   institutionicon: string;
   institutionusecalculatedgpa: number;
   institutioncalculatedgpa: number | null;
@@ -20,8 +18,6 @@ export interface SessionSchema {
   sessioninstitution: number;
   sessioninstitutionname: string;
   sessionname: string;
-  sessionstartdate: string;
-  sessionenddate: string;
   sessionicon: string;
   sessionusecalculatedgpa: number;
   sessioncalculatedgpa: number | null;
@@ -33,8 +29,6 @@ export interface SemesterSchema {
   semestersession: number;
   semestersessionname: string;
   semestername: string;
-  semesterstartdate: string;
-  semesterenddate: string;
   semestericon: string;
   semesterusecalculatedgpa: number;
   semestercalculatedgpa: number | null;
@@ -45,8 +39,6 @@ interface DataValues {
   institutions: InstitutionSchema[];
   createInstitution: (
     name: string,
-    startDate: string,
-    endDate: string,
     icon: string,
     calcGpa: number,
     gpa?: number
@@ -54,19 +46,22 @@ interface DataValues {
   updateInstitution: (
     id: number,
     name: string,
-    startDate: string,
-    endDate: string,
     icon: string,
-    status: string,
-    gpa?: number | null
+    calcGpa: number,
+    gpa?: number
   ) => void;
   sessions: SessionSchema[];
   createSession: (
     institutionId: number,
     institutionName: string,
     name: string,
-    startDate: string,
-    endDate: string,
+    icon: string,
+    calcGpa: number,
+    gpa?: number
+  ) => void;
+  updateSession: (
+    id: number,
+    name: string,
     icon: string,
     calcGpa: number,
     gpa?: number
@@ -76,8 +71,13 @@ interface DataValues {
     sessionId: number,
     sessionName: string,
     name: string,
-    startDate: string,
-    endDate: string,
+    icon: string,
+    calcGpa: number,
+    gpa?: number
+  ) => void;
+  updateSemester: (
+    id: number,
+    name: string,
     icon: string,
     calcGpa: number,
     gpa?: number
@@ -115,8 +115,6 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   const createInstitution = (
     name: string,
-    startDate: string,
-    endDate: string,
     icon: string,
     calcGpa: number,
     gpa?: number
@@ -124,11 +122,9 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     db.transaction((tx) => {
       tx.executeSql(
         gpa
-          ? "INSERT INTO institution (institutionname, institutionstartdate, institutionenddate, institutionicon, institutionusecalculatedgpa, institutionsetgpa) values (?, ?, ?, ?, ?, ?)"
-          : "INSERT INTO institution (institutionname, institutionstartdate, institutionenddate, institutionicon, institutionusecalculatedgpa) values (?, ?, ?, ?, ?)",
-        gpa
-          ? [name, startDate, endDate, icon, calcGpa, gpa]
-          : [name, startDate, endDate, icon, calcGpa],
+          ? "INSERT INTO institution (institutionname, institutionicon, institutionusecalculatedgpa, institutionsetgpa) values (?, ?, ?, ?)"
+          : "INSERT INTO institution (institutionname, institutionicon, institutionusecalculatedgpa) values (?, ?, ?)",
+        gpa ? [name, icon, calcGpa, gpa] : [name, icon, calcGpa],
         (txObj, resultSet) => {
           console.log(resultSet);
           if (resultSet.insertId !== undefined) {
@@ -137,8 +133,6 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
               {
                 institutionid: resultSet.insertId,
                 institutionname: name,
-                institutionstartdate: startDate,
-                institutionenddate: endDate,
                 institutionicon: icon,
                 institutionusecalculatedgpa: calcGpa,
                 institutioncalculatedgpa: null,
@@ -158,20 +152,16 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const updateInstitution = (
     id: number,
     name: string,
-    startDate: string,
-    endDate: string,
     icon: string,
-    status: string,
-    gpa?: number | null
+    calcGpa: number,
+    gpa?: number
   ) => {
     db.transaction((tx) => {
       tx.executeSql(
         gpa
-          ? "UPDATE institution SET institutionname = ?, institutionstartdate = ?, institutionenddate = ?, institutionicon = ?, institutionstatus = ?, institutiongpa = ? WHERE institutionid = ?"
-          : "UPDATE institution SET institutionname = ?, institutionstartdate = ?, institutionenddate = ?, institutionicon = ?, institutionstatus = ? WHERE institutionid = ?",
-        gpa
-          ? [name, startDate, endDate, icon, status, gpa, id]
-          : [name, startDate, endDate, icon, status, id],
+          ? "UPDATE institution SET institutionname = ?, institutionicon = ?, institutionusecalculatedgpa = ?, institutionsetgpa = ? WHERE institutionid = ?"
+          : "UPDATE institution SET institutionname = ?, institutionicon = ?, institutionusecalculatedgpa = ? WHERE institutionid = ?",
+        gpa ? [name, icon, calcGpa, gpa, id] : [name, icon, calcGpa, id],
         (txObj, resultSet) => {
           console.log(resultSet);
           fetchInstitutions();
@@ -204,8 +194,6 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     institutionId: number,
     institutionName: string,
     name: string,
-    startDate: string,
-    endDate: string,
     icon: string,
     calcGpa: number,
     gpa?: number
@@ -213,28 +201,11 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     db.transaction((tx) => {
       tx.executeSql(
         gpa
-          ? "INSERT INTO session (sessioninstitution, sessioninstitutionname, sessionname, sessionstartdate, sessionenddate, sessionicon, sessionusecalculatedgpa, sessionsetgpa) values (?, ?, ?, ?, ?, ?, ?, ?)"
-          : "INSERT INTO session (sessioninstitution, sessioninstitutionname, sessionname, sessionstartdate, sessionenddate, sessionicon, sessionusecalculatedgpa) values (?, ?, ?, ?, ?, ?, ?)",
+          ? "INSERT INTO session (sessioninstitution, sessioninstitutionname, sessionname, sessionicon, sessionusecalculatedgpa, sessionsetgpa) values (?, ?, ?, ?, ?, ?)"
+          : "INSERT INTO session (sessioninstitution, sessioninstitutionname, sessionname, sessionicon, sessionusecalculatedgpa) values (?, ?, ?, ?, ?)",
         gpa
-          ? [
-              institutionId,
-              institutionName,
-              name,
-              startDate,
-              endDate,
-              icon,
-              calcGpa,
-              gpa,
-            ]
-          : [
-              institutionId,
-              institutionName,
-              name,
-              startDate,
-              endDate,
-              icon,
-              calcGpa,
-            ],
+          ? [institutionId, institutionName, name, icon, calcGpa, gpa]
+          : [institutionId, institutionName, name, icon, calcGpa],
         (txObj, resultSet) => {
           console.log(resultSet);
           if (resultSet.insertId !== undefined) {
@@ -245,8 +216,6 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
                 sessioninstitution: institutionId,
                 sessioninstitutionname: institutionName,
                 sessionname: name,
-                sessionstartdate: startDate,
-                sessionenddate: endDate,
                 sessionicon: icon,
                 sessionusecalculatedgpa: calcGpa,
                 sessioncalculatedgpa: null,
@@ -254,6 +223,31 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
               },
             ]);
           }
+        },
+        (txObj, error) => {
+          console.log("Error", error);
+          return false;
+        }
+      );
+    });
+  };
+
+  const updateSession = (
+    id: number,
+    name: string,
+    icon: string,
+    calcGpa: number,
+    gpa?: number
+  ) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        gpa
+          ? "UPDATE session SET sessionname = ?, sessionicon = ?, sessionusecalculatedgpa = ?, sessionsetgpa = ? WHERE sessionid = ?"
+          : "UPDATE session SET sessionname = ?, sessionicon = ?, sessionusecalculatedgpa = ? WHERE sessionid = ?",
+        gpa ? [name, icon, calcGpa, gpa, id] : [name, icon, calcGpa, id],
+        (txObj, resultSet) => {
+          console.log(resultSet);
+          fetchSessions();
         },
         (txObj, error) => {
           console.log("Error", error);
@@ -283,8 +277,6 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     sessionId: number,
     sessionName: string,
     name: string,
-    startDate: string,
-    endDate: string,
     icon: string,
     calcGpa: number,
     gpa?: number
@@ -292,20 +284,11 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     db.transaction((tx) => {
       tx.executeSql(
         gpa
-          ? "INSERT INTO semester (semestersession, semestersessionname, semestername, semesterstartdate, semesterenddate, semestericon, semesterusecalculatedgpa, semestersetgpa) values (?, ?, ?, ?, ?, ?, ?, ?)"
-          : "INSERT INTO semester (semestersession, semestersessionname, semestername, semesterstartdate, semesterenddate, semestericon, semesterusecalculatedgpa) values (?, ?, ?, ?, ?, ?, ?)",
+          ? "INSERT INTO semester (semestersession, semestersessionname, semestername, semestericon, semesterusecalculatedgpa, semestersetgpa) values (?, ?, ?, ?, ?, ?)"
+          : "INSERT INTO semester (semestersession, semestersessionname, semestername, semestericon, semesterusecalculatedgpa) values (?, ?, ?, ?, ?)",
         gpa
-          ? [
-              sessionId,
-              sessionName,
-              name,
-              startDate,
-              endDate,
-              icon,
-              calcGpa,
-              gpa,
-            ]
-          : [sessionId, sessionName, name, startDate, endDate, icon, calcGpa],
+          ? [sessionId, sessionName, name, icon, calcGpa, gpa]
+          : [sessionId, sessionName, name, icon, calcGpa],
         (txObj, resultSet) => {
           console.log(resultSet);
           if (resultSet.insertId !== undefined) {
@@ -316,8 +299,6 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
                 semestersession: sessionId,
                 semestersessionname: sessionName,
                 semestername: name,
-                semesterstartdate: startDate,
-                semesterenddate: endDate,
                 semestericon: icon,
                 semesterusecalculatedgpa: calcGpa,
                 semestercalculatedgpa: null,
@@ -325,6 +306,31 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
               },
             ]);
           }
+        },
+        (txObj, error) => {
+          console.log("Error", error);
+          return false;
+        }
+      );
+    });
+  };
+
+  const updateSemester = (
+    id: number,
+    name: string,
+    icon: string,
+    calcGpa: number,
+    gpa?: number
+  ) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        gpa
+          ? "UPDATE semester SET semestername = ?, semestericon = ?, semesterusecalculatedgpa = ?, semestersetgpa = ? WHERE semesterid = ?"
+          : "UPDATE semester SET semestername = ?, semestericon = ?, semesterusecalculatedgpa = ? WHERE semesterid = ?",
+        gpa ? [name, icon, calcGpa, gpa, id] : [name, icon, calcGpa, id],
+        (txObj, resultSet) => {
+          console.log(resultSet);
+          fetchSemesters();
         },
         (txObj, error) => {
           console.log("Error", error);
@@ -367,8 +373,10 @@ const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         updateInstitution,
         sessions,
         createSession,
+        updateSession,
         semesters,
         createSemester,
+        updateSemester,
         loading,
       }}
     >
